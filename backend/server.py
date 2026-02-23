@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
+import openai
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
@@ -122,6 +123,9 @@ class VerseCreate(BaseModel):
 class CheckoutRequest(BaseModel):
     origin_url: str
 
+class CoachRequest(BaseModel):
+    trigger: str
+    current_feeling: str
 # ============== AUTH HELPERS ==============
 
 def hash_password(password: str) -> str:
