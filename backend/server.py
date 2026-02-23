@@ -237,6 +237,45 @@ def get_base_name(category: str) -> str:
 
 # ============== AUTH ENDPOINTS ==============
 
+@app.post("/api/ai/coach")
+async def get_metabolic_coach_advice(
+    request: CoachRequest, 
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Personalized AI coaching logic for Blessed Belly.
+    Checks for active subscription before providing advice.
+    """
+    # 1. Security Check: Only allow active subscribers to use the AI
+    if current_user.subscription_status != "active":
+        raise HTTPException(
+            status_code=403, 
+            detail="The AI Coach is a premium feature. Please subscribe to unlock!"
+        )
+
+    # 2. Your Coaching Framework (The 'Brain' of the AI)
+    system_prompt = (
+        "You are the Blessed Belly Coach, a compassionate Christian metabolic expert. "
+        "Help women lose weight by addressing hormones and metabolism, not just calories. "
+        "Provide a simple strategy (under 60 seconds) and an encouraging scripture. "
+        "Keep it simple, practical, and non-overwhelming."
+    )
+
+    try:
+        # 3. Call the AI (Make sure OPENAI_API_KEY is in your .env file)
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"I am feeling {request.current_feeling} because of this trigger: {request.trigger}. What is my simple strategy?"}
+            ]
+        )
+        return {"strategy": response.choices[0].message.content}
+    except Exception as e:
+        logging.error(f"AI Coach Error: {e}")
+        raise HTTPException(status_code=500, detail="The coach is currently unavailable.")
+
 @api_router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
     """Register a new user with email/password"""
