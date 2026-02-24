@@ -9,6 +9,9 @@ import { Loader2, X, Heart, Cookie, Battery, Utensils, Moon, BookOpen, Sparkles 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const TriggerLibraryPage = () => {
+  const [aiAdvice, setAiAdvice] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentFeeling, setCurrentFeeling] = useState("overwhelmed"); // Default feeling
   const { token } = useAuth();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -22,7 +25,38 @@ const TriggerLibraryPage = () => {
     'after_meals': { label: 'After Meals', icon: Utensils, color: 'bg-blue-100 text-blue-600', borderColor: 'border-blue-200' },
     'before_bed': { label: 'Before Bed', icon: Moon, color: 'bg-purple-100 text-purple-600', borderColor: 'border-purple-200' }
   };
+  
+const handleAskCoach = async (triggerName) => {
+    setIsLoading(true);
+    setAiAdvice(""); // Clear old advice
+    
+    try {
+        const response = await fetch('http://localhost:8000/api/ai/coach', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}` // Uses their login session
+            },
+            body: JSON.stringify({ 
+                trigger: triggerName, 
+                current_feeling: currentFeeling 
+            })
+        });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Coach is busy!");
+        }
+
+        const data = await response.json();
+        setAiAdvice(data.strategy);
+    } catch (err) {
+        setAiAdvice("The coach is resting right now: " + err.message);
+    } finally {
+        setIsLoading(false);
+    }
+};
+  
   useEffect(() => {
     fetchTriggers();
   }, []);
