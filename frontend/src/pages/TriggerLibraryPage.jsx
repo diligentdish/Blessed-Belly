@@ -121,7 +121,33 @@ const handleAskCoach = async (triggerName) => {
           {Object.entries(triggerConfig).map(([type, config]) => {
             const Icon = config.icon;
             const trigger = getTriggerByType(type);
-            
+
+<div className="space-y-4">
+    <select 
+        onChange={(e) => setCurrentFeeling(e.target.value)}
+        className="w-full p-2 border rounded"
+    >
+        <option value="overwhelmed">I feel overwhelmed</option>
+        <option value="tired">I feel tired</option>
+        <option value="stressed">I feel stressed</option>
+        <option value="discouraged">I feel discouraged</option>
+    </select>
+
+    <button 
+        onClick={() => handleAskCoach(selectedTrigger)}
+        disabled={isLoading || !selectedTrigger}
+        className="w-full bg-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg transition-transform hover:scale-105 disabled:bg-gray-400"
+    >
+        {isLoading ? "Consulting the Coach..." : "Get My Personal Strategy"}
+    </button>
+
+    {aiAdvice && (
+        <div className="mt-6 p-6 bg-secondary/20 border-l-4 border-primary rounded-r-lg animate-in fade-in duration-500">
+            <h3 className="font-bold text-primary mb-2 italic">Coach's Response:</h3>
+            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{aiAdvice}</p>
+        </div>
+    )}
+</div>
             return (
               <button
                 key={type}
